@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-server
+.git
+.env
+.DS_Store
+coverage
+playwright-report
+test-results
+npm-debug.log

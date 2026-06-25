@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-server
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+*.pem
+*.key
+.idea
+.vscode
+coverage
+playwright-report
+test-results

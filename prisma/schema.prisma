@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuditStatus {
+  queued
+  running
+  completed
+  failed
+}
+
+enum AuditMode {
+  url
+  journey
+}
+
+model AuditRun {
+  id              String           @id @default(cuid())
+  mode            AuditMode
+  status          AuditStatus      @default(queued)
+  input           String
+  startUrl        String?
+  finalUrl        String?
+  goal            String?
+  device          String
+  label           String?
+  error           String?
+  performance     Int?
+  accessibility   Int?
+  bestPractices   Int?
+  seo             Int?
+  settings        Json?
+  categoryBreakdown Json?
+  agenticBrowsing  Json?
+  lighthousePasses Json?
+  progressStage   String           @default("queued")
+  progressPercent Int              @default(0)
+  progressMessage String           @default("Waiting for the audit worker.")
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  sections        SectionTiming[]
+  resources       ResourceTiming[]
+  journeySteps    JourneyStep[]
+}
+
+model SectionTiming {
+  id                    String   @id @default(cuid())
+  auditRunId            String
+  label                 String
+  selector              String
+  elementHtml           String?
+  top                   Float
+  height                Float
+  firstDetectedMs       Float
+  firstVisibleMs        Float?
+  contentStableMs       Float?
+  renderCompleteMs      Float?
+  layoutShiftScore      Float   @default(0)
+  blockingResourceCount Int     @default(0)
+  createdAt             DateTime @default(now())
+  auditRun              AuditRun @relation(fields: [auditRunId], references: [id], onDelete: Cascade)
+}
+
+model ResourceTiming {
+  id              String   @id @default(cuid())
+  auditRunId      String
+  sectionTimingId String?
+  url             String
+  type            String
+  initiator       String?
+  startMs         Float
+  durationMs      Float
+  transferSize    Int?
+  status          Int?
+  createdAt       DateTime @default(now())
+  auditRun        AuditRun @relation(fields: [auditRunId], references: [id], onDelete: Cascade)
+}
+
+model JourneyStep {
+  id          String   @id @default(cuid())
+  auditRunId  String
+  index       Int
+  action      String
+  status      String
+  startedAtMs Float?
+  endedAtMs   Float?
+  detail      String?
+  createdAt   DateTime @default(now())
+  auditRun    AuditRun @relation(fields: [auditRunId], references: [id], onDelete: Cascade)
+
+  @@unique([auditRunId, index])
+}
