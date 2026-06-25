@@ -15,7 +15,7 @@ const tabLabels: Record<ReportTab, string> = {
   overview: "Overview",
   timeline: "Timeline",
   network: "Network",
-  agentic: "Agentic",
+  agentic: "Agentic Browsing",
   diagnostics: "Diagnostics"
 };
 

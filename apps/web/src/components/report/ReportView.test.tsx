@@ -44,7 +44,7 @@ describe("ReportView", () => {
       />
     );
 
-    expect(html).toContain("Agentic");
+    expect(html).toContain("Agentic Browsing");
     expect(html).toContain("No data");
   });
 
@@ -69,7 +69,7 @@ describe("ReportView", () => {
       />
     );
 
-    expect(html).toContain("Agentic");
+    expect(html).toContain("Agentic Browsing");
     expect(html).toContain("<span>2</span>");
   });
 });
