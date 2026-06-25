@@ -11,6 +11,14 @@ import { ScoreStrip } from "./ScoreStrip";
 import { SectionTimeline } from "./SectionTimeline";
 import { reportTabs, type ReportRoute, type ReportTab } from "../../utils/reportRoutes";
 
+const tabLabels: Record<ReportTab, string> = {
+  overview: "Overview",
+  timeline: "Timeline",
+  network: "Network",
+  agentic: "Agentic",
+  diagnostics: "Diagnostics"
+};
+
 export function ReportView({
   report,
   route,
@@ -57,10 +65,10 @@ export function ReportView({
             onKeyDown={(event) => handleTabKey(event, tab)}
             key={tab}
           >
-            {tab}
+            {tabLabels[tab]}
             {tab === "timeline" && report.sections.length > 0 && <span>{report.sections.length}</span>}
             {tab === "network" && report.resources.length > 0 && <span>{report.resources.length}</span>}
-            {tab === "agentic" && report.agenticBrowsing && <span>{actionableAgenticCount(report.agenticBrowsing.checks)}</span>}
+            {tab === "agentic" && <span>{report.agenticBrowsing ? actionableAgenticCount(report.agenticBrowsing.checks) : "No data"}</span>}
           </button>
         ))}
       </div>
