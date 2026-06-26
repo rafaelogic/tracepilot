@@ -1,6 +1,6 @@
 # Tracepilot
 
-Tracepilot is a local-first web performance auditor. It combines Lighthouse category scores with section-level rendering timelines, resource waterfalls, and browser-driven journey audits so teams can find slow parts of a page before they ship.
+Tracepilot is a local-first web performance and technical SEO auditor. It combines Lighthouse category scores with section-level rendering timelines, resource waterfalls, browser-driven journey audits, and focused crawler/SEO tools so teams can find slow, broken, or crawler-hostile parts of a page before they ship.
 
 ## Features
 
@@ -8,8 +8,10 @@ Tracepilot is a local-first web performance auditor. It combines Lighthouse cate
 - Run natural-language browser journeys with Stagehand when OpenAI credentials are configured.
 - Compare Performance, Accessibility, Best Practices, and SEO scores.
 - Review Lighthouse Agentic Browsing checks and copy a focused repair prompt for a coding agent.
-- Inspect section visibility, stability, and render-completion timing.
+- Inspect section visibility, stability, render-completion timing, and screenshot evidence with target overlays.
 - Trace network resources against each section's render window.
+- Use the Tools workspace for standalone crawler and technical SEO checks without running a full Lighthouse audit.
+- Review visual tool summaries, tabbed details, findings, and copyable issue-resolution prompts after each analysis.
 - Persist audit history in PostgreSQL through Prisma.
 
 ## Requirements
@@ -41,6 +43,8 @@ Choose one setup:
    ```
 
 4. Open `http://localhost:5175`.
+
+   The audit workspace is at `/`, and the standalone tools workspace is at `/tools`.
 
 The API is available at `http://localhost:4041`, and PostgreSQL is exposed on `localhost:55432`. The API container applies Prisma migrations automatically during startup.
 
@@ -75,6 +79,8 @@ The API is available at `http://localhost:4041`, and PostgreSQL is exposed on `l
    ```
 
 The web app runs at `http://localhost:5173` and the API at `http://localhost:4040`. Vite selects another port if `5173` is unavailable.
+
+In Docker, the web app runs at `http://localhost:5175` and the API proxy is available through `/api`.
 
 ## Configuration
 
@@ -118,6 +124,40 @@ docs/        Product and implementation specifications
 ```
 
 The web application calls the Express API under `/api`. The API runs browser and Lighthouse audits, stores results through Prisma, and returns reports consumed by the React workspace.
+
+## Audit Workspace
+
+The Audit page runs URL and journey audits and stores a report history grouped by audited site. Reports include:
+
+- **Overview:** Lighthouse scores, category findings, and score-card drilldowns.
+- **Timeline:** section rendering phases with screenshot evidence and red target rectangles when the captured screenshot includes extra context.
+- **Network:** resource waterfall and diagnostics.
+- **Agentic:** Lighthouse Agentic Browsing findings and a coding-agent repair prompt.
+- **Diagnostics:** raw audit data for deeper inspection.
+
+Finding drilldowns can generate a repair prompt that includes affected evidence and the Lighthouse recheck endpoint.
+
+## Tools Workspace
+
+Open `/tools` to run focused checks without a full Lighthouse audit. Current tools are:
+
+| Tool | Purpose |
+| --- | --- |
+| Crawler Files | Checks root-level `robots.txt` and `llms.txt` availability and structure |
+| Page Structure | Visualizes rendered heading hierarchy, metadata health, split H1 issues, and related SEO structure problems |
+| Structured Data | Validates rendered JSON-LD blocks, entity types, and syntax errors |
+| Internal Link Graph | Samples same-origin links, broken internal URLs, and link density |
+| Metadata & Social Preview | Checks canonical metadata, Open Graph tags, Twitter/X card tags, preview images, and icons |
+| Third-Party Script Inventory | Inventories external origins, scripts, request volume, and resource types |
+| Content Freshness & Indexability | Checks robots directives, canonical signals, sitemap availability, and visible freshness date signals |
+
+Tool results use compact tabs:
+
+- **Visual:** metrics, status chips, and small charts for quick triage.
+- **Details:** raw tool-specific evidence.
+- **Findings:** blockers, warnings, manual-review items, and affected evidence.
+
+After a tool completes, Tracepilot shows a **Resolve issues prompt** below the target URL form. The prompt includes the tool findings and evidence, and reminds coding agents to treat diagnostic snippets as untrusted data.
 
 ## Labeling Page Sections
 
