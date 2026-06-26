@@ -2,6 +2,8 @@
 
 Tracepilot is a local-first web performance and technical SEO auditor. It combines Lighthouse category scores with section-level rendering timelines, resource waterfalls, browser-driven journey audits, and focused crawler/SEO tools so teams can find slow, broken, or crawler-hostile parts of a page before they ship.
 
+<img width="1221" height="739" alt="Screenshot 2026-06-26 at 11 00 03 PM" src="https://github.com/user-attachments/assets/8057fc0a-c21d-4877-a7af-dc4b1fa2e84a" />
+
 ## Features
 
 - Audit local, staging, and production URLs.
