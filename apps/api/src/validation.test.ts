@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createAuditSchema, lighthouseRecheckSchema } from "./validation";
+import { crawlerFilesToolSchema, createAuditSchema, lighthouseRecheckSchema, pageStructureToolSchema } from "./validation";
 
 describe("lighthouseRecheckSchema", () => {
   it("defaults the device to mobile", () => {
@@ -79,5 +79,29 @@ describe("createAuditSchema settings", () => {
         }
       }
     })).toThrow();
+  });
+});
+
+describe("crawlerFilesToolSchema", () => {
+  it("accepts absolute URLs for standalone crawler file checks", () => {
+    expect(crawlerFilesToolSchema.parse({ url: "https://example.com/docs" })).toEqual({
+      url: "https://example.com/docs"
+    });
+  });
+
+  it("rejects invalid tool target URLs", () => {
+    expect(() => crawlerFilesToolSchema.parse({ url: "example.com" })).toThrow();
+  });
+});
+
+describe("pageStructureToolSchema", () => {
+  it("accepts absolute URLs for standalone page structure checks", () => {
+    expect(pageStructureToolSchema.parse({ url: "https://example.com/page" })).toEqual({
+      url: "https://example.com/page"
+    });
+  });
+
+  it("rejects invalid page structure target URLs", () => {
+    expect(() => pageStructureToolSchema.parse({ url: "/relative" })).toThrow();
   });
 });

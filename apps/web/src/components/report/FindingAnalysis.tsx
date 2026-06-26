@@ -352,6 +352,7 @@ function groupForFinding(finding: AuditCategoryFinding) {
   if (text.includes("link") || text.includes("name") || text.includes("discernible")) return { key: "accessible-names", label: "Accessible names and links" };
   if (text.includes("cookie")) return { key: "cookies", label: "Cookies and privacy" };
   if (text.includes("deprec")) return { key: "deprecated", label: "Deprecated APIs" };
+  if (text.includes("robots-txt") || text.includes("llms-txt")) return { key: "crawler-text-files", label: "Crawler and AI discovery files" };
   if (text.includes("seo") || text.includes("crawl") || text.includes("meta")) return { key: "seo", label: "Search metadata" };
   return { key: "other", label: "Other audit findings" };
 }
@@ -407,6 +408,30 @@ function suggestionsForFinding(finding: AuditCategoryFinding) {
     return [
       "Audit the listed third-party cookie owner and remove it if it is not required for the audited journey.",
       "If it is required, confirm the provider has a first-party or partitioned-cookie path for modern browser privacy rules."
+    ];
+  }
+  if (id.startsWith("robots-txt")) {
+    if (id.includes("sitemap")) {
+      return [
+        "Add a Sitemap directive to /robots.txt using an absolute URL such as 'Sitemap: https://example.com/sitemap.xml'.",
+        "Make sure the sitemap contains canonical public URLs and is updated when content changes."
+      ];
+    }
+    if (id.includes("blocks-all")) {
+      return [
+        "Remove blanket 'Disallow: /' rules from production robots.txt unless the entire origin should stay private.",
+        "Replace broad blocks with path-scoped rules for private, duplicate, or low-value routes."
+      ];
+    }
+    return [
+      "Serve /robots.txt as plain text from the origin root with at least 'User-agent: *' and explicit Allow or Disallow directives.",
+      "Keep robots.txt deterministic and cacheable, and avoid returning the frontend app shell or an HTML error page."
+    ];
+  }
+  if (id.startsWith("llms-txt")) {
+    return [
+      "Add /llms.txt as concise Markdown with one H1, a short blockquote summary, and curated Markdown links to the most useful pages.",
+      "Include durable URLs for docs, pricing, API references, policies, and other pages an AI assistant should read before answering."
     ];
   }
 

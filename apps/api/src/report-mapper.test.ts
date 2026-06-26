@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toSummary } from "./report-mapper";
+import { toReport, toSummary } from "./report-mapper";
 
 describe("toSummary progress", () => {
   it("maps persisted audit progress into the public contract", () => {
@@ -98,5 +98,59 @@ describe("toSummary progress", () => {
     });
 
     expect(summary.agenticBrowsing).toBeUndefined();
+  });
+});
+
+describe("toReport sections", () => {
+  it("maps persisted section screenshots into the public report", () => {
+    const report = toReport({
+      id: "run-3",
+      mode: "url",
+      status: "completed",
+      input: "https://example.com",
+      startUrl: "https://example.com",
+      finalUrl: "https://example.com",
+      goal: null,
+      device: "desktop",
+      label: null,
+      error: null,
+      performance: 90,
+      accessibility: 90,
+      bestPractices: 90,
+      seo: 90,
+      progressStage: "completed",
+      progressPercent: 100,
+      progressMessage: "Complete",
+      createdAt: new Date("2026-06-24T00:00:00Z"),
+      startedAt: null,
+      completedAt: new Date("2026-06-24T00:01:00Z"),
+      sections: [{
+        id: "section-1",
+        label: "Hero",
+        selector: "main > section",
+        elementHtml: "<section>Hero</section>",
+        screenshot: {
+          dataUrl: "data:image/png;base64,abc",
+          clip: { x: 0, y: 100, width: 1200, height: 700 },
+          target: { x: 0, y: 40, width: 1200, height: 320 },
+          highlight: true
+        },
+        top: 100,
+        height: 320,
+        firstDetectedMs: 10,
+        firstVisibleMs: 20,
+        contentStableMs: 30,
+        renderCompleteMs: 40,
+        layoutShiftScore: 0,
+        blockingResourceCount: 0
+      }]
+    });
+
+    expect(report.sections[0].screenshot).toEqual({
+      dataUrl: "data:image/png;base64,abc",
+      clip: { x: 0, y: 100, width: 1200, height: 700 },
+      target: { x: 0, y: 40, width: 1200, height: 320 },
+      highlight: true
+    });
   });
 });

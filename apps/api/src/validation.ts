@@ -42,3 +42,17 @@ export const lighthouseRecheckSchema = z.object({
   device: z.enum(["mobile", "desktop"]).default("mobile"),
   targetScores: targetScoresSchema
 });
+
+export const crawlerFilesToolSchema = z.object({
+  url: z.string().url()
+});
+
+export const pageStructureToolSchema = z.object({
+  url: z.string().url()
+});
+
+export const structuredDataToolSchema = z.object({ url: z.string().url() });
+export const internalLinkGraphToolSchema = z.object({ url: z.string().url() });
+export const metadataSocialToolSchema = z.object({ url: z.string().url() });
+export const thirdPartyToolSchema = z.object({ url: z.string().url() });
+export const freshnessIndexabilityToolSchema = z.object({ url: z.string().url() });

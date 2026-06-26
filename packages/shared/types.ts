@@ -111,6 +111,22 @@ export interface SectionTimelineEntry {
   label: string;
   selector: string;
   elementHtml?: string | null;
+  screenshot?: {
+    dataUrl: string;
+    clip: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    target: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    highlight: boolean;
+  } | null;
   top: number;
   height: number;
   firstDetectedMs: number;
@@ -220,4 +236,118 @@ export interface LighthouseRecheckResponse {
   };
   opportunities: LighthouseRecheckAudit[];
   diagnostics: LighthouseRecheckAudit[];
+}
+
+export interface CrawlerFileAuditFile {
+  kind: "robots" | "llms";
+  url: string;
+  status: number | null;
+  contentType: string | null;
+  ok: boolean;
+  snippet: string | null;
+  error?: string;
+}
+
+export interface CrawlerFilesAuditResponse {
+  url: string;
+  origin: string;
+  files: CrawlerFileAuditFile[];
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface PageStructureHeading {
+  level: number;
+  text: string;
+  selector: string;
+}
+
+export interface PageStructureAuditResponse {
+  url: string;
+  finalUrl: string;
+  status: number | null;
+  title: string | null;
+  metaDescription: string | null;
+  canonical: string | null;
+  headings: PageStructureHeading[];
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface StructuredDataItem {
+  type: string | null;
+  id: string | null;
+  valid: boolean;
+  errors: string[];
+  snippet: string;
+}
+
+export interface StructuredDataAuditResponse {
+  url: string;
+  finalUrl: string;
+  status: number | null;
+  items: StructuredDataItem[];
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface InternalLinkGraphEntry {
+  url: string;
+  status: number | null;
+  title: string | null;
+  linkCount: number;
+  error?: string;
+}
+
+export interface InternalLinkGraphResponse {
+  url: string;
+  origin: string;
+  crawled: InternalLinkGraphEntry[];
+  brokenLinks: Array<{ from: string; to: string; status: number | null; text: string }>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface MetadataSocialPreviewResponse {
+  url: string;
+  finalUrl: string;
+  status: number | null;
+  title: string | null;
+  description: string | null;
+  canonical: string | null;
+  openGraph: Record<string, string | null>;
+  twitter: Record<string, string | null>;
+  icons: Array<{ rel: string; href: string; sizes?: string | null }>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface ThirdPartyScriptParty {
+  origin: string;
+  requestCount: number;
+  scriptCount: number;
+  resourceTypes: string[];
+  urls: string[];
+}
+
+export interface ThirdPartyScriptInventoryResponse {
+  url: string;
+  finalUrl: string;
+  firstPartyOrigin: string;
+  parties: ThirdPartyScriptParty[];
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface ContentFreshnessIndexabilityResponse {
+  url: string;
+  finalUrl: string;
+  status: number | null;
+  robotsMeta: string | null;
+  canonical: string | null;
+  sitemapUrl: string | null;
+  sitemapStatus: number | null;
+  dateSignals: Array<{ label: string; value: string }>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
 }

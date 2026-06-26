@@ -86,9 +86,10 @@ export async function runAudit(options: RunnerOptions) {
 
     await updateProgress(options.runId, "observing-sections", 44, "Detecting page sections and waiting for visual stability.");
     await page.waitForTimeout(900);
-    const sections = await page.evaluate<SectionTimelineEntry[]>(() => {
+    let sections = await page.evaluate<SectionTimelineEntry[]>(() => {
       return window.__sectionTimeline?.getSections?.() ?? [];
     });
+    sections = await captureSectionScreenshots(page, sections);
 
     await updateProgress(options.runId, "collecting-resources", 58, "Correlating network activity with rendered sections.");
     const resources = await collectResourceTimings(page, networkRecords);
@@ -287,6 +288,93 @@ async function collectResourceTimings(page: Page, networkRecords: NetworkRecord[
   })).sort((a, b) => b.durationMs - a.durationMs).slice(0, 200);
 }
 
+async function captureSectionScreenshots(page: Page, sections: SectionTimelineEntry[]) {
+  const pageMetrics = await page.evaluate(() => ({
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+    scrollWidth: Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth ?? 0),
+    scrollHeight: Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight ?? 0)
+  }));
+  const maxClipHeight = Math.min(900, Math.max(360, pageMetrics.viewportHeight));
+  const maxSections = 20;
+
+  const withScreenshots: SectionTimelineEntry[] = [];
+  for (const section of sections.slice(0, maxSections)) {
+    withScreenshots.push({
+      ...section,
+      screenshot: await captureSectionScreenshot(page, section, pageMetrics, maxClipHeight)
+    });
+  }
+
+  return [
+    ...withScreenshots,
+    ...sections.slice(maxSections)
+  ];
+}
+
+async function captureSectionScreenshot(
+  page: Page,
+  section: SectionTimelineEntry,
+  pageMetrics: { viewportWidth: number; viewportHeight: number; scrollWidth: number; scrollHeight: number },
+  maxClipHeight: number
+): Promise<SectionTimelineEntry["screenshot"]> {
+  const rect = await page.evaluate((selector) => {
+    const element = document.querySelector(selector);
+    if (!element) return null;
+    const box = element.getBoundingClientRect();
+    return {
+      x: box.left + window.scrollX,
+      y: box.top + window.scrollY,
+      width: box.width,
+      height: box.height
+    };
+  }, section.selector).catch(() => null);
+
+  if (!rect || rect.width <= 0 || rect.height <= 0) return null;
+
+  const clipWidth = Math.min(pageMetrics.scrollWidth, Math.max(rect.width, pageMetrics.viewportWidth));
+  const clipHeight = Math.min(pageMetrics.scrollHeight, Math.max(220, Math.min(rect.height, maxClipHeight)));
+  const desiredY = rect.height > clipHeight
+    ? rect.y
+    : rect.y - Math.max(0, (clipHeight - rect.height) / 2);
+  const clip = {
+    x: clamp(rect.x - Math.max(0, (clipWidth - rect.width) / 2), 0, Math.max(0, pageMetrics.scrollWidth - clipWidth)),
+    y: clamp(desiredY, 0, Math.max(0, pageMetrics.scrollHeight - clipHeight)),
+    width: Math.max(1, Math.round(clipWidth)),
+    height: Math.max(1, Math.round(clipHeight))
+  };
+  const target = {
+    x: Math.round(rect.x - clip.x),
+    y: Math.round(rect.y - clip.y),
+    width: Math.round(Math.min(rect.width, clip.width)),
+    height: Math.round(Math.min(rect.height, clip.height - Math.max(0, rect.y - clip.y)))
+  };
+  const highlight = Math.abs(clip.x - rect.x) > 1
+    || Math.abs(clip.y - rect.y) > 1
+    || Math.abs(clip.width - rect.width) > 1
+    || Math.abs(clip.height - rect.height) > 1;
+
+  const image = await page.screenshot({
+    type: "png",
+    animations: "disabled",
+    caret: "hide",
+    clip
+  }).catch(() => null);
+
+  if (!image) return null;
+
+  return {
+    dataUrl: `data:image/png;base64,${image.toString("base64")}`,
+    clip,
+    target,
+    highlight
+  };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
 async function persistResults(
   runId: string,
   finalUrl: string,
@@ -327,6 +415,9 @@ async function persistResults(
         label: section.label,
         selector: section.selector,
         elementHtml: section.elementHtml,
+        screenshot: section.screenshot
+          ? section.screenshot as unknown as Prisma.InputJsonValue
+          : undefined,
         top: section.top,
         height: section.height,
         firstDetectedMs: section.firstDetectedMs,

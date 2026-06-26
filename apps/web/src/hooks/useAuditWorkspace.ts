@@ -101,7 +101,7 @@ export function useAuditWorkspace() {
   async function refreshHistory() {
     const runs = await listAudits();
     setHistory(runs);
-    setActiveRunId((current) => current ?? routeRunId() ?? runs[0]?.id ?? null);
+    setActiveRunId((current) => resolveActiveRunIdAfterHistory(current, routeRunId()));
   }
 
   function selectRun(runId: string) {
@@ -176,8 +176,17 @@ function clampInteger(value: number, min: number, max: number) {
 }
 
 function routeRunId() {
+  if (isToolsRoute()) return null;
   const route = parseReportRoute();
   return route.kind === "home" ? null : route.runId;
+}
+
+export function resolveActiveRunIdAfterHistory(currentRunId: string | null, routeRunId: string | null) {
+  return currentRunId ?? routeRunId ?? null;
+}
+
+function isToolsRoute() {
+  return window.location.pathname.startsWith("/tools");
 }
 
 function setUrl(path: string) {

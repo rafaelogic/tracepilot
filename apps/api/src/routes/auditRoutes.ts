@@ -1,8 +1,17 @@
 import { Router } from "express";
-import { createAuditSchema, createJourneySchema, lighthouseRecheckSchema } from "../validation.js";
+import { crawlerFilesToolSchema, createAuditSchema, createJourneySchema, lighthouseRecheckSchema, pageStructureToolSchema } from "../validation.js";
 import { compareAuditRuns } from "../services/comparisonService.js";
 import { createAudit, createJourney, deleteAudit, getAuditReport, listAuditRuns } from "../services/auditService.js";
 import { recheckLighthouse } from "../services/lighthouseService.js";
+import { checkCrawlerFiles } from "../services/crawlerFilesToolService.js";
+import { checkPageStructure } from "../services/pageStructureToolService.js";
+import {
+  checkContentFreshnessIndexability,
+  checkInternalLinkGraph,
+  checkMetadataSocial,
+  checkStructuredData,
+  checkThirdPartyInventory
+} from "../services/advancedSeoToolsService.js";
 
 export const auditRoutes = Router();
 
@@ -28,6 +37,69 @@ auditRoutes.post("/lighthouse/recheck", async (request, response, next) => {
   try {
     const input = lighthouseRecheckSchema.parse(request.body);
     response.json(await recheckLighthouse(input));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/crawler-files", async (request, response, next) => {
+  try {
+    const input = crawlerFilesToolSchema.parse(request.body);
+    response.json(await checkCrawlerFiles(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/page-structure", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await checkPageStructure(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/structured-data", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await checkStructuredData(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/internal-link-graph", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await checkInternalLinkGraph(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/metadata-social", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await checkMetadataSocial(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/third-party-inventory", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await checkThirdPartyInventory(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/freshness-indexability", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await checkContentFreshnessIndexability(input.url));
   } catch (error) {
     next(error);
   }

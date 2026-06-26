@@ -80,6 +80,9 @@ function TimelineRow({ section, resources, maxMs }: { section: SectionTimelineEn
       </summary>
       <div className="timeline-accordion" id={accordionId}>
         <div className="timeline-accordion-grid">
+          <EvidencePanel title="Section screenshot">
+            <SectionScreenshot section={section} />
+          </EvidencePanel>
           <EvidencePanel title="Raw HTML">
             <pre>{section.elementHtml || "Raw HTML was not captured for this audit. Re-run the audit with the updated observer."}</pre>
           </EvidencePanel>
@@ -106,6 +109,35 @@ function TimelineRow({ section, resources, maxMs }: { section: SectionTimelineEn
         </div>
       </div>
     </details>
+  );
+}
+
+function SectionScreenshot({ section }: { section: SectionTimelineEntry }) {
+  const screenshot = section.screenshot;
+
+  if (!screenshot) {
+    return <p>No screenshot was captured for this section. Re-run the audit after this update to collect visual evidence.</p>;
+  }
+
+  return (
+    <figure className="section-screenshot">
+      <div className="section-screenshot-frame">
+        <img src={screenshot.dataUrl} alt={`Screenshot of ${section.label}`} loading="lazy" />
+        {screenshot.highlight && (
+          <span
+            className="section-screenshot-highlight"
+            aria-hidden="true"
+            style={{
+              left: `${(screenshot.target.x / screenshot.clip.width) * 100}%`,
+              top: `${(screenshot.target.y / screenshot.clip.height) * 100}%`,
+              width: `${(screenshot.target.width / screenshot.clip.width) * 100}%`,
+              height: `${(screenshot.target.height / screenshot.clip.height) * 100}%`
+            }}
+          />
+        )}
+      </div>
+      {screenshot.highlight && <figcaption>Red outline marks this section within the captured page area.</figcaption>}
+    </figure>
   );
 }
 

@@ -1,4 +1,4 @@
-import type { AgenticBrowsingCheck, AgenticBrowsingResult, AuditCategoryBreakdown, AuditProgressStage, AuditReport, AuditRunSummary, AuditSettings, LighthousePassesMetadata } from "../../../packages/shared/types.js";
+import type { AgenticBrowsingCheck, AgenticBrowsingResult, AuditCategoryBreakdown, AuditProgressStage, AuditReport, AuditRunSummary, AuditSettings, LighthousePassesMetadata, SectionTimelineEntry } from "../../../packages/shared/types.js";
 
 type AuditRunWithRelations = {
   id: string;
@@ -113,6 +113,7 @@ export function toReport(run: AuditRunWithRelations): AuditReport {
       label: section.label,
       selector: section.selector,
       elementHtml: section.elementHtml,
+      screenshot: normalizeSectionScreenshot(section.screenshot),
       top: section.top,
       height: section.height,
       firstDetectedMs: section.firstDetectedMs,
@@ -142,4 +143,36 @@ export function toReport(run: AuditRunWithRelations): AuditReport {
       detail: step.detail
     }))
   };
+}
+
+function normalizeSectionScreenshot(value: unknown): SectionTimelineEntry["screenshot"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const candidate = value as Record<string, unknown>;
+  if (typeof candidate.dataUrl !== "string" || !candidate.dataUrl.startsWith("data:image/")) return null;
+  const clip = normalizeRect(candidate.clip);
+  const target = normalizeRect(candidate.target);
+  if (!clip || !target || typeof candidate.highlight !== "boolean") return null;
+
+  return {
+    dataUrl: candidate.dataUrl,
+    clip,
+    target,
+    highlight: candidate.highlight
+  };
+}
+
+function normalizeRect(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const rect = value as Record<string, unknown>;
+  if (!isNumber(rect.x) || !isNumber(rect.y) || !isNumber(rect.width) || !isNumber(rect.height)) return null;
+  return {
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height
+  };
+}
+
+function isNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
 }
