@@ -17,6 +17,15 @@ describe("ToolsPage", () => {
     expect(html).toContain("Social Preview");
     expect(html).toContain("Third Parties");
     expect(html).toContain("Indexability");
+    expect(html).toContain("JS Execution");
+    expect(html).toContain("Unused Coverage");
+    expect(html).toContain("Bundle Map");
+    expect(html).toContain("Images");
+    expect(html).toContain("Critical CSS");
+    expect(html).toContain("RUM Snippet");
+    expect(html).toContain("3P Mitigation");
+    expect(html).toContain("Prefetch");
+    expect(html).toContain("Repeat View");
     expect(html).toContain("robots.txt");
     expect(html).toContain("llms.txt");
     expect(html).toContain("Check files");
@@ -42,6 +51,13 @@ describe("ToolsPage", () => {
 
     expect(html).toContain("Structured Data");
     expect(html).toContain("Validate schema");
+  });
+
+  it("renders the JavaScript execution profiler from its route", () => {
+    const html = renderToStaticMarkup(<ToolsPage initialTool="js-execution-profile" />);
+
+    expect(html).toContain("JavaScript Execution Profiler");
+    expect(html).toContain("Profile JS");
   });
 
   it("builds a resolve prompt with the tool findings and evidence", () => {

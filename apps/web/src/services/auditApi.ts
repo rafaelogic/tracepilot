@@ -2,13 +2,22 @@ import type {
   AuditReport,
   AuditRunSummary,
   AuditSettings,
+  BundleCompositionResponse,
   ContentFreshnessIndexabilityResponse,
+  CoverageAuditResponse,
   CrawlerFilesAuditResponse,
+  CriticalCssResponse,
   DeviceProfile,
+  ImageOptimizationResponse,
   InternalLinkGraphResponse,
+  JavaScriptExecutionProfileResponse,
   MetadataSocialPreviewResponse,
   PageStructureAuditResponse,
+  PrefetchOpportunityResponse,
+  RepeatViewFilmstripResponse,
+  RumSnippetResponse,
   StructuredDataAuditResponse,
+  ThirdPartyMitigationResponse,
   ThirdPartyScriptInventoryResponse
 } from "../../../../packages/shared/types";
 
@@ -64,6 +73,42 @@ export async function checkThirdPartyInventory(url: string) {
 
 export async function checkFreshnessIndexability(url: string) {
   return postJson<ContentFreshnessIndexabilityResponse>("/api/tools/freshness-indexability", { url });
+}
+
+export async function checkJsExecutionProfile(url: string) {
+  return postJson<JavaScriptExecutionProfileResponse>("/api/tools/js-execution-profile", { url });
+}
+
+export async function checkUnusedCoverage(url: string) {
+  return postJson<CoverageAuditResponse>("/api/tools/unused-coverage", { url });
+}
+
+export async function checkBundleComposition(url: string) {
+  return postJson<BundleCompositionResponse>("/api/tools/bundle-composition", { url });
+}
+
+export async function checkImageOptimization(url: string) {
+  return postJson<ImageOptimizationResponse>("/api/tools/image-optimization", { url });
+}
+
+export async function checkCriticalCss(url: string) {
+  return postJson<CriticalCssResponse>("/api/tools/critical-css", { url });
+}
+
+export async function generateRumSnippet(url: string) {
+  return postJson<RumSnippetResponse>("/api/tools/rum-snippet", { url });
+}
+
+export async function checkThirdPartyMitigation(url: string) {
+  return postJson<ThirdPartyMitigationResponse>("/api/tools/third-party-mitigation", { url });
+}
+
+export async function checkPrefetchOpportunities(url: string) {
+  return postJson<PrefetchOpportunityResponse>("/api/tools/prefetch-opportunities", { url });
+}
+
+export async function checkRepeatViewFilmstrip(url: string) {
+  return postJson<RepeatViewFilmstripResponse>("/api/tools/repeat-view-filmstrip", { url });
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {

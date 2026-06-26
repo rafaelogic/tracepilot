@@ -1564,6 +1564,11 @@ h1 span {
   gap: 10px;
 }
 
+.tool-detail-stack {
+  display: grid;
+  gap: 12px;
+}
+
 .tool-detail-list article {
   display: grid;
   gap: 5px;
@@ -1593,6 +1598,62 @@ h1 span {
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 0.68rem;
   font-weight: 750;
+}
+
+.tool-code-block {
+  max-height: 320px;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--technical-ink);
+  border-radius: var(--radius-sm);
+  background: var(--technical);
+  padding: 14px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+
+.filmstrip-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 30%);
+}
+
+.filmstrip-frames {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.filmstrip-frames figure {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 35%);
+  box-shadow: inset 1px 1px 3px rgb(163 177 198 / 35%), inset -1px -1px 3px rgb(255 255 255 / 72%);
+}
+
+.filmstrip-frames img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--technical);
+}
+
+.filmstrip-frames figcaption {
+  padding: 8px;
+  color: var(--ink-muted);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.66rem;
+  font-weight: 850;
+  text-align: center;
 }
 
 .tool-detail-list pre {
@@ -3798,6 +3859,10 @@ pre {
   }
 
   .metadata-signal {
+    grid-template-columns: 1fr;
+  }
+
+  .filmstrip-frames {
     grid-template-columns: 1fr;
   }
 

@@ -12,6 +12,17 @@ import {
   checkStructuredData,
   checkThirdPartyInventory
 } from "../services/advancedSeoToolsService.js";
+import {
+  adviseThirdPartyMitigation,
+  analyzeBundleComposition,
+  analyzeCriticalCss,
+  auditImageOptimization,
+  auditUnusedCoverage,
+  compareRepeatViewFilmstrip,
+  findPrefetchOpportunities,
+  generateRumSnippet,
+  profileJavaScriptExecution
+} from "../services/speedOptimizationToolsService.js";
 
 export const auditRoutes = Router();
 
@@ -100,6 +111,87 @@ auditRoutes.post("/tools/freshness-indexability", async (request, response, next
   try {
     const input = pageStructureToolSchema.parse(request.body);
     response.json(await checkContentFreshnessIndexability(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/js-execution-profile", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await profileJavaScriptExecution(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/unused-coverage", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await auditUnusedCoverage(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/bundle-composition", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await analyzeBundleComposition(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/image-optimization", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await auditImageOptimization(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/critical-css", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await analyzeCriticalCss(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/rum-snippet", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await generateRumSnippet(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/third-party-mitigation", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await adviseThirdPartyMitigation(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/prefetch-opportunities", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await findPrefetchOpportunities(input.url));
+  } catch (error) {
+    next(error);
+  }
+});
+
+auditRoutes.post("/tools/repeat-view-filmstrip", async (request, response, next) => {
+  try {
+    const input = pageStructureToolSchema.parse(request.body);
+    response.json(await compareRepeatViewFilmstrip(input.url));
   } catch (error) {
     next(error);
   }

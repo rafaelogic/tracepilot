@@ -1,26 +1,44 @@
-import { AlertTriangle, BarChart3, Bot, Braces, Check, CheckCircle2, Clipboard, FileSearch, FileText, Heading1, Layers3, Link2, Loader2, Network, ScrollText, Search, Share2, XCircle } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Bot, Braces, Check, CheckCircle2, Clipboard, Code2, FastForward, FileSearch, FileText, Film, Gauge, Heading1, ImageIcon, Layers3, Link2, Loader2, Network, PackageSearch, Paintbrush, RadioTower, ScrollText, Search, Share2, XCircle } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
 import type {
   AuditCategoryFinding,
   AuditFindingItem,
+  BundleCompositionResponse,
   ContentFreshnessIndexabilityResponse,
+  CoverageAuditResponse,
   CrawlerFileAuditFile,
   CrawlerFilesAuditResponse,
+  CriticalCssResponse,
+  ImageOptimizationResponse,
   InternalLinkGraphResponse,
+  JavaScriptExecutionProfileResponse,
   MetadataSocialPreviewResponse,
   PageStructureAuditResponse,
+  PrefetchOpportunityResponse,
+  RepeatViewFilmstripResponse,
+  RumSnippetResponse,
   StructuredDataAuditResponse,
+  ThirdPartyMitigationResponse,
   ThirdPartyScriptInventoryResponse
 } from "../../../../../packages/shared/types";
 import {
+  checkBundleComposition,
+  checkCriticalCss,
   checkCrawlerFiles,
   checkFreshnessIndexability,
+  checkImageOptimization,
   checkInternalLinkGraph,
+  checkJsExecutionProfile,
   checkMetadataSocial,
   checkPageStructure,
+  checkPrefetchOpportunities,
+  checkRepeatViewFilmstrip,
   checkStructuredData,
-  checkThirdPartyInventory
+  checkThirdPartyMitigation,
+  checkThirdPartyInventory,
+  checkUnusedCoverage,
+  generateRumSnippet
 } from "../../services/auditApi";
 
 type ToolId =
@@ -30,7 +48,16 @@ type ToolId =
   | "internal-link-graph"
   | "metadata-social"
   | "third-party-inventory"
-  | "freshness-indexability";
+  | "freshness-indexability"
+  | "js-execution-profile"
+  | "unused-coverage"
+  | "bundle-composition"
+  | "image-optimization"
+  | "critical-css"
+  | "rum-snippet"
+  | "third-party-mitigation"
+  | "prefetch-opportunities"
+  | "repeat-view-filmstrip";
 
 const tools: Array<{ id: ToolId; title: string; detail: string; icon: React.ReactNode; path: string }> = [
   { id: "crawler-files", title: "Crawler Files", detail: "robots.txt + llms.txt", icon: <FileSearch size={16} />, path: "/tools" },
@@ -39,7 +66,16 @@ const tools: Array<{ id: ToolId; title: string; detail: string; icon: React.Reac
   { id: "internal-link-graph", title: "Internal Links", detail: "Broken links + anchors", icon: <Link2 size={16} />, path: "/tools/internal-link-graph" },
   { id: "metadata-social", title: "Social Preview", detail: "OG + Twitter cards", icon: <Share2 size={16} />, path: "/tools/metadata-social" },
   { id: "third-party-inventory", title: "Third Parties", detail: "Scripts + origins", icon: <Network size={16} />, path: "/tools/third-party-inventory" },
-  { id: "freshness-indexability", title: "Indexability", detail: "Robots + freshness", icon: <ScrollText size={16} />, path: "/tools/freshness-indexability" }
+  { id: "freshness-indexability", title: "Indexability", detail: "Robots + freshness", icon: <ScrollText size={16} />, path: "/tools/freshness-indexability" },
+  { id: "js-execution-profile", title: "JS Execution", detail: "Long tasks + scripts", icon: <Activity size={16} />, path: "/tools/js-execution-profile" },
+  { id: "unused-coverage", title: "Unused Coverage", detail: "JS + CSS waste", icon: <Code2 size={16} />, path: "/tools/unused-coverage" },
+  { id: "bundle-composition", title: "Bundle Map", detail: "Runtime JS bytes", icon: <PackageSearch size={16} />, path: "/tools/bundle-composition" },
+  { id: "image-optimization", title: "Images", detail: "Sizing + formats", icon: <ImageIcon size={16} />, path: "/tools/image-optimization" },
+  { id: "critical-css", title: "Critical CSS", detail: "Blocking + unused CSS", icon: <Paintbrush size={16} />, path: "/tools/critical-css" },
+  { id: "rum-snippet", title: "RUM Snippet", detail: "Web Vitals field data", icon: <RadioTower size={16} />, path: "/tools/rum-snippet" },
+  { id: "third-party-mitigation", title: "3P Mitigation", detail: "Loading advice", icon: <Gauge size={16} />, path: "/tools/third-party-mitigation" },
+  { id: "prefetch-opportunities", title: "Prefetch", detail: "Next-page speed", icon: <FastForward size={16} />, path: "/tools/prefetch-opportunities" },
+  { id: "repeat-view-filmstrip", title: "Repeat View", detail: "Cache + filmstrip", icon: <Film size={16} />, path: "/tools/repeat-view-filmstrip" }
 ];
 
 export function ToolsPage({ initialTool }: { initialTool?: ToolId } = {}) {
@@ -125,6 +161,96 @@ export function ToolsPage({ initialTool }: { initialTool?: ToolId } = {}) {
             run={checkFreshnessIndexability}
             renderVisual={(result) => <FreshnessVisualization result={result} />}
             renderDetails={(result) => <FreshnessDetails result={result} />}
+          />
+        )}
+        {activeTool === "js-execution-profile" && (
+          <SimpleSeoTool<JavaScriptExecutionProfileResponse>
+            title="JavaScript Execution Profiler"
+            description="Measure long tasks, startup script activity, and main-thread blocking patterns outside Lighthouse scoring."
+            buttonLabel="Profile JS"
+            run={checkJsExecutionProfile}
+            renderVisual={(result) => <JsExecutionVisualization result={result} />}
+            renderDetails={(result) => <JsExecutionDetails result={result} />}
+          />
+        )}
+        {activeTool === "unused-coverage" && (
+          <SimpleSeoTool<CoverageAuditResponse>
+            title="Unused JS/CSS Coverage"
+            description="Use browser coverage to estimate unused JavaScript and CSS bytes for the loaded route."
+            buttonLabel="Measure coverage"
+            run={checkUnusedCoverage}
+            renderVisual={(result) => <CoverageVisualization result={result} />}
+            renderDetails={(result) => <CoverageDetails result={result} />}
+          />
+        )}
+        {activeTool === "bundle-composition" && (
+          <SimpleSeoTool<BundleCompositionResponse>
+            title="Runtime Bundle Composition"
+            description="Map loaded JavaScript assets by ownership and size from browser resource timing."
+            buttonLabel="Map bundles"
+            run={checkBundleComposition}
+            renderVisual={(result) => <BundleVisualization result={result} />}
+            renderDetails={(result) => <BundleDetails result={result} />}
+          />
+        )}
+        {activeTool === "image-optimization" && (
+          <SimpleSeoTool<ImageOptimizationResponse>
+            title="Image Optimization"
+            description="Inspect rendered image dimensions, formats, transfer size, and responsive-image savings opportunities."
+            buttonLabel="Inspect images"
+            run={checkImageOptimization}
+            renderVisual={(result) => <ImageOptimizationVisualization result={result} />}
+            renderDetails={(result) => <ImageOptimizationDetails result={result} />}
+          />
+        )}
+        {activeTool === "critical-css" && (
+          <SimpleSeoTool<CriticalCssResponse>
+            title="Critical CSS Analyzer"
+            description="Measure blocking stylesheet count and CSS usage during initial render."
+            buttonLabel="Analyze CSS"
+            run={checkCriticalCss}
+            renderVisual={(result) => <CriticalCssVisualization result={result} />}
+            renderDetails={(result) => <CriticalCssDetails result={result} />}
+          />
+        )}
+        {activeTool === "rum-snippet" && (
+          <SimpleSeoTool<RumSnippetResponse>
+            title="Real User Metrics Snippet"
+            description="Generate a Web Vitals attribution snippet and payload contract for field-data collection."
+            buttonLabel="Generate snippet"
+            run={generateRumSnippet}
+            renderVisual={(result) => <RumSnippetVisualization result={result} />}
+            renderDetails={(result) => <RumSnippetDetails result={result} />}
+          />
+        )}
+        {activeTool === "third-party-mitigation" && (
+          <SimpleSeoTool<ThirdPartyMitigationResponse>
+            title="Third-Party Mitigation Advisor"
+            description="Turn third-party request inventory into route-level loading, consent, and ownership recommendations."
+            buttonLabel="Advise loading"
+            run={checkThirdPartyMitigation}
+            renderVisual={(result) => <ThirdPartyMitigationVisualization result={result} />}
+            renderDetails={(result) => <ThirdPartyMitigationDetails result={result} />}
+          />
+        )}
+        {activeTool === "prefetch-opportunities" && (
+          <SimpleSeoTool<PrefetchOpportunityResponse>
+            title="Prefetch Opportunity Mapper"
+            description="Find safe same-origin links for prefetch or Speculation Rules and call out links to avoid."
+            buttonLabel="Map prefetch"
+            run={checkPrefetchOpportunities}
+            renderVisual={(result) => <PrefetchVisualization result={result} />}
+            renderDetails={(result) => <PrefetchDetails result={result} />}
+          />
+        )}
+        {activeTool === "repeat-view-filmstrip" && (
+          <SimpleSeoTool<RepeatViewFilmstripResponse>
+            title="Repeat View Filmstrip"
+            description="Compare first-view and repeat-view timing, transfer size, and viewport screenshots."
+            buttonLabel="Capture repeat view"
+            run={checkRepeatViewFilmstrip}
+            renderVisual={(result) => <RepeatViewVisualization result={result} />}
+            renderDetails={(result) => <RepeatViewDetails result={result} />}
           />
         )}
       </div>
@@ -830,6 +956,230 @@ function FreshnessDetails({ result }: { result: ContentFreshnessIndexabilityResp
   );
 }
 
+function JsExecutionVisualization({ result }: { result: JavaScriptExecutionProfileResponse }) {
+  const maxDuration = Math.max(...result.longTasks.map((task) => task.duration), 1);
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="Long Tasks" value={String(result.longTasks.length)} state={result.longTasks.length === 0 ? "passed" : "warning"} detail="Tasks over 50ms" />
+        <MetricCard label="Total Blocking" value={`${Math.round(result.totalLongTaskTime)}ms`} state={result.totalLongTaskTime > 600 ? "failed" : result.totalLongTaskTime > 200 ? "warning" : "passed"} detail="Observed long-task time" />
+        <MetricCard label="Max Task" value={`${Math.round(result.maxLongTaskTime)}ms`} state={result.maxLongTaskTime > 250 ? "failed" : result.maxLongTaskTime > 100 ? "warning" : "passed"} detail="Largest single task" />
+      </div>
+      <MiniBarList title="Long task timeline" rows={result.longTasks.slice(0, 8).map((task, index) => ({ label: `${Math.round(task.startTime)}ms task ${index + 1}`, value: Math.round(task.duration), percent: (task.duration / maxDuration) * 100 }))} empty="No long tasks were observed." />
+    </section>
+  );
+}
+
+function JsExecutionDetails({ result }: { result: JavaScriptExecutionProfileResponse }) {
+  return <GenericList title="Script resources" icon={<Activity size={15} />} rows={result.scriptResources.map((script) => ({ label: script.url, detail: `${formatBytes(script.transferSize)} · ${Math.round(script.duration)}ms` }))} empty="No script resource timing entries were found." />;
+}
+
+function CoverageVisualization({ result }: { result: CoverageAuditResponse }) {
+  const total = result.js.totalBytes + result.css.totalBytes;
+  const unused = result.js.unusedBytes + result.css.unusedBytes;
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="Total Covered" value={formatBytes(total)} state="passed" detail="JS and CSS observed" />
+        <MetricCard label="Unused Bytes" value={formatBytes(unused)} state={unused / Math.max(total, 1) > 0.55 ? "warning" : "passed"} detail={`${Math.round((unused / Math.max(total, 1)) * 100)}% unused`} />
+        <MetricCard label="Files" value={String(result.js.files.length + result.css.files.length)} state="passed" detail="Coverage records" />
+      </div>
+      <MiniBarList title="Largest unused files" rows={[...result.js.files, ...result.css.files].sort((a, b) => b.unusedBytes - a.unusedBytes).slice(0, 8).map((file) => ({ label: file.url, value: Math.round(file.unusedBytes / 1000), percent: (file.unusedBytes / Math.max(unused, 1)) * 100 }))} empty="No unused coverage data was collected." />
+    </section>
+  );
+}
+
+function CoverageDetails({ result }: { result: CoverageAuditResponse }) {
+  return (
+    <div className="tool-detail-stack">
+      <GenericList title="JavaScript coverage" icon={<Code2 size={15} />} rows={result.js.files.map((file) => ({ label: file.url, detail: `${formatBytes(file.unusedBytes)} unused of ${formatBytes(file.totalBytes)}` }))} empty="No JavaScript coverage files were collected." />
+      <GenericList title="CSS coverage" icon={<Paintbrush size={15} />} rows={result.css.files.map((file) => ({ label: file.url, detail: `${formatBytes(file.unusedBytes)} unused of ${formatBytes(file.totalBytes)}` }))} empty="No CSS coverage files were collected." />
+    </div>
+  );
+}
+
+function BundleVisualization({ result }: { result: BundleCompositionResponse }) {
+  const maxBytes = Math.max(...result.scripts.map((script) => script.bytes), 1);
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="Script Bytes" value={formatBytes(result.totalScriptBytes)} state={result.totalScriptBytes > 750_000 ? "warning" : "passed"} detail="Runtime JS transfer" />
+        <MetricCard label="First Party" value={formatBytes(result.firstPartyBytes)} state="passed" detail="Owned application scripts" />
+        <MetricCard label="Third Party" value={formatBytes(result.thirdPartyBytes)} state={result.thirdPartyBytes > result.firstPartyBytes ? "warning" : "passed"} detail="External script share" />
+      </div>
+      <MiniBarList title="Largest runtime scripts" rows={result.scripts.slice(0, 8).map((script) => ({ label: script.host, value: Math.round(script.bytes / 1000), percent: (script.bytes / maxBytes) * 100 }))} empty="No script resources were found." />
+    </section>
+  );
+}
+
+function BundleDetails({ result }: { result: BundleCompositionResponse }) {
+  return <GenericList title="Script assets" icon={<PackageSearch size={15} />} rows={result.scripts.map((script) => ({ label: script.url, detail: `${formatBytes(script.bytes)} · ${script.firstParty ? "first-party" : "third-party"}` }))} empty="No runtime scripts were found." />;
+}
+
+function ImageOptimizationVisualization({ result }: { result: ImageOptimizationResponse }) {
+  const maxBytes = Math.max(...result.images.map((image) => image.transferSize), 1);
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="Images" value={String(result.images.length)} state="passed" detail="Rendered image elements" />
+        <MetricCard label="Image Bytes" value={formatBytes(result.totalImageBytes)} state={result.totalImageBytes > 1_000_000 ? "warning" : "passed"} detail="Observed transfer size" />
+        <MetricCard label="Savings" value={formatBytes(result.potentialSavings)} state={result.potentialSavings > 250_000 ? "warning" : "passed"} detail="Responsive-size estimate" />
+      </div>
+      <MiniBarList title="Largest images" rows={result.images.slice(0, 8).map((image) => ({ label: image.src, value: Math.round(image.transferSize / 1000), percent: (image.transferSize / maxBytes) * 100 }))} empty="No rendered images were found." />
+    </section>
+  );
+}
+
+function ImageOptimizationDetails({ result }: { result: ImageOptimizationResponse }) {
+  return <GenericList title="Rendered images" icon={<ImageIcon size={15} />} rows={result.images.map((image) => ({ label: image.src, detail: `${formatBytes(image.transferSize)} · ${image.format} · ${image.naturalWidth}x${image.naturalHeight} rendered ${image.displayWidth}x${image.displayHeight}` }))} empty="No image elements were found." />;
+}
+
+function CriticalCssVisualization({ result }: { result: CriticalCssResponse }) {
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="CSS Bytes" value={formatBytes(result.totalCssBytes)} state="passed" detail="Stylesheet coverage" />
+        <MetricCard label="Unused CSS" value={formatBytes(result.unusedCssBytes)} state={result.unusedCssBytes / Math.max(result.totalCssBytes, 1) > 0.65 ? "warning" : "passed"} detail={`${Math.round((result.unusedCssBytes / Math.max(result.totalCssBytes, 1)) * 100)}% unused`} />
+        <MetricCard label="Blocking Sheets" value={String(result.blockingStylesheets.length)} state={result.blockingStylesheets.length > 3 ? "warning" : "passed"} detail="Render-path stylesheets" />
+      </div>
+      <MiniBarList title="CSS unused bytes" rows={result.stylesheets.slice(0, 8).map((sheet) => ({ label: sheet.url, value: Math.round(sheet.unusedBytes / 1000), percent: (sheet.unusedBytes / Math.max(result.unusedCssBytes, 1)) * 100 }))} empty="No CSS usage records were collected." />
+    </section>
+  );
+}
+
+function CriticalCssDetails({ result }: { result: CriticalCssResponse }) {
+  return (
+    <div className="tool-detail-stack">
+      <GenericList title="Blocking stylesheets" icon={<Paintbrush size={15} />} rows={result.blockingStylesheets.map((sheet) => ({ label: sheet.url, detail: sheet.media ?? "all" }))} empty="No render-blocking stylesheet links were detected." />
+      <GenericList title="Stylesheet coverage" icon={<Code2 size={15} />} rows={result.stylesheets.map((sheet) => ({ label: sheet.url, detail: `${formatBytes(sheet.unusedBytes)} unused of ${formatBytes(sheet.totalBytes)}` }))} empty="No stylesheet coverage records were collected." />
+    </div>
+  );
+}
+
+function RumSnippetVisualization({ result }: { result: RumSnippetResponse }) {
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="Metrics" value={String(result.metrics.length)} state="passed" detail={result.metrics.join(", ")} />
+        <MetricCard label="Endpoint" value={result.endpointPath} state="warning" detail="Receiver to implement" />
+        <MetricCard label="Payload Fields" value={String(Object.keys(result.payloadShape).length)} state="passed" detail="Beacon body shape" />
+      </div>
+    </section>
+  );
+}
+
+function RumSnippetDetails({ result }: { result: RumSnippetResponse }) {
+  return (
+    <section className="page-structure-panel">
+      <div className="panel-title"><RadioTower size={15} /> Web Vitals snippet</div>
+      <pre className="tool-code-block">{result.snippet}</pre>
+    </section>
+  );
+}
+
+function ThirdPartyMitigationVisualization({ result }: { result: ThirdPartyMitigationResponse }) {
+  const maxRequests = Math.max(...result.parties.map((party) => party.requestCount), 1);
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="Origins" value={String(result.parties.length)} state={result.parties.length > 5 ? "warning" : "passed"} detail="External providers" />
+        <MetricCard label="Scripts" value={String(result.parties.reduce((total, party) => total + party.scriptCount, 0))} state="warning" detail="Third-party scripts" />
+        <MetricCard label="Recommendations" value={String(result.parties.reduce((total, party) => total + party.recommendations.length, 0))} state="passed" detail="Loading actions" />
+      </div>
+      <MiniBarList title="Origins by request count" rows={result.parties.slice(0, 8).map((party) => ({ label: party.origin, value: party.requestCount, percent: (party.requestCount / maxRequests) * 100 }))} empty="No third-party origins were observed." />
+    </section>
+  );
+}
+
+function ThirdPartyMitigationDetails({ result }: { result: ThirdPartyMitigationResponse }) {
+  return <GenericList title="Mitigation plan" icon={<Gauge size={15} />} rows={result.parties.flatMap((party) => party.recommendations.map((recommendation) => ({ label: party.origin, detail: recommendation })))} empty="No third-party mitigation recommendations were generated." />;
+}
+
+function PrefetchVisualization({ result }: { result: PrefetchOpportunityResponse }) {
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="Candidates" value={String(result.candidates.length)} state={result.candidates.length > 0 ? "passed" : "warning"} detail="Safe visible links" />
+        <MetricCard label="Avoid" value={String(result.avoid.length)} state={result.avoid.length > 0 ? "warning" : "passed"} detail="Stateful or risky links" />
+        <MetricCard label="Rules" value="JSON" state="passed" detail="Speculation Rules draft" />
+      </div>
+      <GenericList title="Prefetch candidates" icon={<FastForward size={15} />} rows={result.candidates.map((candidate) => ({ label: candidate.url, detail: candidate.text || candidate.reason }))} empty="No safe candidates were found." />
+    </section>
+  );
+}
+
+function PrefetchDetails({ result }: { result: PrefetchOpportunityResponse }) {
+  return (
+    <div className="tool-detail-stack">
+      <GenericList title="Avoid prefetching" icon={<AlertTriangle size={15} />} rows={result.avoid.map((link) => ({ label: link.url, detail: link.reason }))} empty="No avoid-list links were detected." />
+      <section className="page-structure-panel">
+        <div className="panel-title"><Code2 size={15} /> Speculation rules</div>
+        <pre className="tool-code-block">{result.speculationRules}</pre>
+      </section>
+    </div>
+  );
+}
+
+function RepeatViewVisualization({ result }: { result: RepeatViewFilmstripResponse }) {
+  const transferDelta = result.firstView.transferSize - result.repeatView.transferSize;
+  return (
+    <section className="tool-viz-panel">
+      <div className="tool-viz-grid">
+        <MetricCard label="First Load" value={`${result.firstView.loadEventEnd}ms`} state="warning" detail={formatBytes(result.firstView.transferSize)} />
+        <MetricCard label="Repeat Load" value={`${result.repeatView.loadEventEnd}ms`} state={result.repeatView.loadEventEnd < result.firstView.loadEventEnd ? "passed" : "warning"} detail={formatBytes(result.repeatView.transferSize)} />
+        <MetricCard label="Saved Transfer" value={formatBytes(Math.max(0, transferDelta))} state={transferDelta > 0 ? "passed" : "warning"} detail="Cache delta" />
+      </div>
+      <Filmstrip label="First view" screenshots={result.firstView.screenshots} />
+      <Filmstrip label="Repeat view" screenshots={result.repeatView.screenshots} />
+    </section>
+  );
+}
+
+function RepeatViewDetails({ result }: { result: RepeatViewFilmstripResponse }) {
+  return (
+    <dl className="page-metadata-grid">
+      <div><dt>First DCL</dt><dd>{result.firstView.domContentLoaded}ms</dd></div>
+      <div><dt>First Load</dt><dd>{result.firstView.loadEventEnd}ms</dd></div>
+      <div><dt>Repeat DCL</dt><dd>{result.repeatView.domContentLoaded}ms</dd></div>
+      <div><dt>Repeat Load</dt><dd>{result.repeatView.loadEventEnd}ms</dd></div>
+    </dl>
+  );
+}
+
+function GenericList({ title, icon, rows, empty }: { title: string; icon: React.ReactNode; rows: Array<{ label: string; detail: string }>; empty: string }) {
+  return (
+    <section className="page-structure-panel">
+      <div className="panel-title">{icon} {title}</div>
+      {rows.length === 0 ? <p className="tool-muted">{empty}</p> : (
+        <div className="tool-detail-list">
+          {rows.slice(0, 24).map((row, index) => (
+            <article key={`${row.label}-${index}`}>
+              <strong>{row.label}</strong>
+              <small>{row.detail}</small>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function Filmstrip({ label, screenshots }: { label: string; screenshots: Array<{ atMs: number; dataUrl: string }> }) {
+  return (
+    <section className="filmstrip-panel">
+      <div className="panel-title"><Film size={15} /> {label}</div>
+      <div className="filmstrip-frames">
+        {screenshots.map((shot) => (
+          <figure key={`${label}-${shot.atMs}`}>
+            <img src={shot.dataUrl} alt={`${label} at ${shot.atMs} milliseconds`} />
+            <figcaption>{shot.atMs}ms</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function FindingsList({ findings, emptyTitle }: { findings: AuditCategoryFinding[]; emptyTitle: string }) {
   if (findings.length === 0) {
     return (
@@ -969,6 +1319,12 @@ function oneLine(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function formatBytes(bytes: number) {
+  if (bytes >= 1_000_000) return `${(bytes / 1_000_000).toFixed(1)} MB`;
+  if (bytes >= 1_000) return `${Math.round(bytes / 1_000)} KB`;
+  return `${bytes} B`;
+}
+
 function promptTarget(resolvedTarget: string | null | undefined, inputTarget: string) {
   return resolvedTarget ?? (inputTarget.trim() || "Enter a target URL, run this tool, then copy the issue-specific prompt.");
 }
@@ -1010,6 +1366,15 @@ function useToolRoute(initialTool?: ToolId): ToolId {
 
 function toolFromPath(): ToolId {
   if (typeof window === "undefined") return "crawler-files";
+  if (window.location.pathname.includes("/js-execution-profile")) return "js-execution-profile";
+  if (window.location.pathname.includes("/unused-coverage")) return "unused-coverage";
+  if (window.location.pathname.includes("/bundle-composition")) return "bundle-composition";
+  if (window.location.pathname.includes("/image-optimization")) return "image-optimization";
+  if (window.location.pathname.includes("/critical-css")) return "critical-css";
+  if (window.location.pathname.includes("/rum-snippet")) return "rum-snippet";
+  if (window.location.pathname.includes("/third-party-mitigation")) return "third-party-mitigation";
+  if (window.location.pathname.includes("/prefetch-opportunities")) return "prefetch-opportunities";
+  if (window.location.pathname.includes("/repeat-view-filmstrip")) return "repeat-view-filmstrip";
   if (window.location.pathname.includes("/structured-data")) return "structured-data";
   if (window.location.pathname.includes("/internal-link-graph")) return "internal-link-graph";
   if (window.location.pathname.includes("/metadata-social")) return "metadata-social";

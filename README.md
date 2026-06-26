@@ -150,6 +150,15 @@ Open `/tools` to run focused checks without a full Lighthouse audit. Current too
 | Metadata & Social Preview | Checks canonical metadata, Open Graph tags, Twitter/X card tags, preview images, and icons |
 | Third-Party Script Inventory | Inventories external origins, scripts, request volume, and resource types |
 | Content Freshness & Indexability | Checks robots directives, canonical signals, sitemap availability, and visible freshness date signals |
+| JavaScript Execution Profiler | Measures long tasks, script resource timing, and main-thread blocking patterns |
+| Unused JS/CSS Coverage | Uses browser coverage to estimate unused JavaScript and CSS bytes for the loaded route |
+| Runtime Bundle Composition | Maps loaded JavaScript assets by ownership and transfer size |
+| Image Optimization | Inspects rendered image dimensions, formats, transfer size, and responsive-image savings opportunities |
+| Critical CSS Analyzer | Measures blocking stylesheet count and CSS usage during initial render |
+| Real User Metrics Snippet | Generates a Web Vitals attribution snippet and payload contract for field-data collection |
+| Third-Party Mitigation Advisor | Turns third-party inventory into route-level loading, consent, ownership, and removal recommendations |
+| Prefetch Opportunity Mapper | Finds safe same-origin links for prefetch or Speculation Rules and flags links to avoid |
+| Repeat View Filmstrip | Compares first-view and repeat-view timing, transfer size, and viewport screenshots |
 
 Tool results use compact tabs:
 

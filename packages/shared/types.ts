@@ -351,3 +351,95 @@ export interface ContentFreshnessIndexabilityResponse {
   findings: AuditCategoryFinding[];
   passed: boolean;
 }
+
+export interface JavaScriptExecutionProfileResponse {
+  url: string;
+  finalUrl: string;
+  status: number | null;
+  totalLongTaskTime: number;
+  maxLongTaskTime: number;
+  longTasks: Array<{ startTime: number; duration: number; attribution: string[] }>;
+  scriptResources: Array<{ url: string; transferSize: number; duration: number }>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface CoverageAuditResponse {
+  url: string;
+  finalUrl: string;
+  js: { totalBytes: number; unusedBytes: number; files: Array<{ url: string; totalBytes: number; unusedBytes: number }> };
+  css: { totalBytes: number; unusedBytes: number; files: Array<{ url: string; totalBytes: number; unusedBytes: number }> };
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface BundleCompositionResponse {
+  url: string;
+  finalUrl: string;
+  totalScriptBytes: number;
+  firstPartyBytes: number;
+  thirdPartyBytes: number;
+  scripts: Array<{ url: string; bytes: number; firstParty: boolean; host: string }>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface ImageOptimizationResponse {
+  url: string;
+  finalUrl: string;
+  images: Array<{ src: string; format: string; transferSize: number; naturalWidth: number; naturalHeight: number; displayWidth: number; displayHeight: number; oversizedRatio: number }>;
+  totalImageBytes: number;
+  potentialSavings: number;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface CriticalCssResponse {
+  url: string;
+  finalUrl: string;
+  totalCssBytes: number;
+  unusedCssBytes: number;
+  blockingStylesheets: Array<{ url: string; media: string | null }>;
+  stylesheets: Array<{ url: string; totalBytes: number; unusedBytes: number }>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface RumSnippetResponse {
+  url: string;
+  finalUrl: string;
+  endpointPath: string;
+  snippet: string;
+  metrics: string[];
+  payloadShape: Record<string, string>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface ThirdPartyMitigationResponse {
+  url: string;
+  finalUrl: string;
+  firstPartyOrigin: string;
+  parties: Array<{ origin: string; requestCount: number; scriptCount: number; resourceTypes: string[]; recommendations: string[] }>;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface PrefetchOpportunityResponse {
+  url: string;
+  finalUrl: string;
+  candidates: Array<{ url: string; text: string; reason: string; visible: boolean }>;
+  avoid: Array<{ url: string; text: string; reason: string }>;
+  speculationRules: string;
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
+
+export interface RepeatViewFilmstripResponse {
+  url: string;
+  finalUrl: string;
+  firstView: { loadEventEnd: number; domContentLoaded: number; transferSize: number; screenshots: Array<{ atMs: number; dataUrl: string }> };
+  repeatView: { loadEventEnd: number; domContentLoaded: number; transferSize: number; screenshots: Array<{ atMs: number; dataUrl: string }> };
+  findings: AuditCategoryFinding[];
+  passed: boolean;
+}
